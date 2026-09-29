@@ -1,0 +1,7 @@
+research/
+dist/
+node_modules/
+.cache/
+cache/
+.vite/
+*.tsbuildinfo
