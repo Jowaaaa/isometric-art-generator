@@ -15,7 +15,7 @@ function shade(color: string, amount: number): string {
  * pixel becomes a dense 2x2 raster block and the silhouette is extruded along
  * the isometric down-right vector before the front face is drawn over it.
  */
-export function flatToIso(grid: PixelGrid, depth = 0): IsoImage {
+export function flatToIso(grid: PixelGrid, depth = 0, crop = true): IsoImage {
   const pixels: IsoPixel[] = []
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
 
@@ -46,7 +46,7 @@ export function flatToIso(grid: PixelGrid, depth = 0): IsoImage {
     }
   }
 
-  if (!sourcePixels.length) return { pixels: [], width: 0, height: 0 }
+  if (!sourcePixels.length && crop) return { pixels: [], width: 0, height: 0 }
 
   if (depth > 0) {
     // Draw the farthest layers first so the front face remains crisp and on top.
@@ -63,6 +63,22 @@ export function flatToIso(grid: PixelGrid, depth = 0): IsoImage {
       }
     }
     for (const pixel of sourcePixels) addBlock(pixel.x, pixel.y, pixel.color)
+  }
+
+  if (!crop) {
+    const width = grid[0]?.length ?? 0
+    const height = grid.length
+    if (depth > 0) {
+      minX = 0
+      minY = -depth
+      maxX = Math.max(0, (width - 1) * 2 + depth * 2 + 1)
+      maxY = Math.max(0, (width - 1) + (height - 1) * 2 + 1)
+    } else {
+      minX = -(height - 1) * 2
+      minY = 0
+      maxX = Math.max(0, (width - 1) * 2)
+      maxY = Math.max(0, width + height - 2)
+    }
   }
 
   return {
